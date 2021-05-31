@@ -591,7 +591,7 @@ Result Compiler::BuildShaderModule(const ShaderModuleBuildInfo *shaderInfo, Shad
           context->setModuleTargetMachine(module);
 
           unsigned passIndex = 0;
-          std::unique_ptr<lgc::PassManager> lowerPassMgr(lgc::PassManager::Create());
+          std::unique_ptr<lgc::LegacyPassManager> lowerPassMgr(lgc::LegacyPassManager::Create());
           lowerPassMgr->setPassIndex(&passIndex);
 
           // Set the shader stage in the Builder.
@@ -1161,7 +1161,7 @@ Result Compiler::buildPipelineInternal(Context *context, ArrayRef<const Pipeline
       if (!shaderInfoEntry || !shaderInfoEntry->pModuleData || (stageSkipMask & shaderStageToMask(entryStage)))
         continue;
 
-      std::unique_ptr<lgc::PassManager> lowerPassMgr(lgc::PassManager::Create());
+      std::unique_ptr<lgc::LegacyPassManager> lowerPassMgr(lgc::LegacyPassManager::Create());
       lowerPassMgr->setPassIndex(&passIndex);
 
       // Set the shader stage in the Builder.
@@ -1203,7 +1203,7 @@ Result Compiler::buildPipelineInternal(Context *context, ArrayRef<const Pipeline
       }
 
       context->getBuilder()->setShaderStage(getLgcShaderStage(entryStage));
-      std::unique_ptr<lgc::PassManager> lowerPassMgr(lgc::PassManager::Create());
+      std::unique_ptr<lgc::LegacyPassManager> lowerPassMgr(lgc::LegacyPassManager::Create());
       lowerPassMgr->setPassIndex(&passIndex);
 
       SpirvLower::addPasses(context, entryStage, *lowerPassMgr, timerProfiler.getTimer(TimerLower)
@@ -1833,7 +1833,7 @@ Context *Compiler::acquireContext() const {
 //
 // @param passMgr : Pass manager
 // @param [in/out] module : Module
-bool Compiler::runPasses(lgc::PassManager *passMgr, Module *module) const {
+bool Compiler::runPasses(lgc::LegacyPassManager *passMgr, Module *module) const {
   bool success = false;
 #if LLPC_ENABLE_EXCEPTION
   try
