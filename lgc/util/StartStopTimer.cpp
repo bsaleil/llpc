@@ -29,6 +29,7 @@
 ***********************************************************************************************************************
 */
 #include "lgc/LgcContext.h"
+#include "lgc/PassManager.h"
 #include "lgc/util/Internal.h"
 #include "llvm/IR/PassManager.h"
 #include "llvm/Pass.h"
@@ -55,10 +56,9 @@ public:
 
   bool runImpl(Module &module);
 
-private:
-  StartStopTimer(const StartStopTimer &) = delete;
-  StartStopTimer &operator=(const StartStopTimer &) = delete;
+  static StringRef name() { return "Start or stop timer"; }
 
+private:
   Timer *m_timer;  // The timer to start or stop when the pass is run
   bool m_starting; // True to start the timer, false to stop it
 };
@@ -92,6 +92,10 @@ char LegacyStartStopTimer::ID = 0;
 // @param starting : True to start the timer, false to stop it
 ModulePass *LgcContext::createStartStopTimer(Timer *timer, bool starting) {
   return new LegacyStartStopTimer(timer, starting);
+}
+
+void LgcContext::createAndAddStartStopTimer(lgc::PassManager &passMgr, Timer *timer, bool starting) {
+  passMgr.addPass(StartStopTimer(timer, starting));
 }
 
 // =====================================================================================================================
