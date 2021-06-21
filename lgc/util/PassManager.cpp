@@ -98,7 +98,7 @@ private:
 
   // -----------------------------------------------------------------------------------------------------------------
 
-  ModuleAnalysisManager analysisManager;       // Analysis manager used when running the passes.
+  ModuleAnalysisManager moduleAM;              // Module analysis manager used when running the passes.
   PassInstrumentationCallbacks instrCallbacks; // Instrumentation callbacks ran when running the passes.
   VerifyInstrumentation instrVerify;           // Verify instrumentation, run module verifier after each pass.
   unsigned *m_passIndex = nullptr;             // Pass Index
@@ -167,13 +167,17 @@ PassManagerImpl::PassManagerImpl() : PassManager(), instrVerify(getLgcOuts()) {
   registerCallbacks();
   if (cl::VerifyIr)
     instrVerify.registerCallbacks(instrCallbacks);
-  PassBuilder passBuilder(nullptr, PipelineTuningOptions(), None, &instrCallbacks);
-  passBuilder.registerModuleAnalyses(analysisManager);
 }
 
 // =====================================================================================================================
 void PassManagerImpl::run(Module &module) {
-  ModulePassManager::run(module, analysisManager);
+  // We register LLVM's default analysis sets late to be sure our custom
+  // analyses are added beforehand.
+  PassBuilder passBuilder(nullptr, PipelineTuningOptions(), None, &instrCallbacks);
+  passBuilder.registerModuleAnalyses(moduleAM);
+  passBuilder.registerFunctionAnalyses(functionAM);
+  moduleAM.registerPass([&] { return FunctionAnalysisManagerModuleProxy(functionAM); });
+  ModulePassManager::run(module, moduleAM);
 }
 
 // =====================================================================================================================

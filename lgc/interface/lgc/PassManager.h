@@ -51,8 +51,14 @@ class PassManager : public llvm::ModulePassManager {
 public:
   static PassManager *Create();
   virtual ~PassManager() {}
+  template <typename PassBuilderT> bool registerFunctionAnalysis(PassBuilderT &&PassBuilder) {
+    return functionAM.registerPass(PassBuilder);
+  }
   virtual void run(llvm::Module &module) = 0;
   virtual void setPassIndex(unsigned *passIndex) = 0;
+
+protected:
+  llvm::FunctionAnalysisManager functionAM; // Function analysis manager used when running the passes.
 };
 
 } // namespace lgc
