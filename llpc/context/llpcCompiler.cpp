@@ -668,7 +668,8 @@ Result Compiler::BuildShaderModule(const ShaderModuleBuildInfo *shaderInfo, Shad
           shaderInfo.pModuleData = &moduleDataEx.common;
           shaderInfo.entryStage = entryNames[i].stage;
           shaderInfo.pEntryTarget = entryNames[i].name;
-          lowerPassMgr->add(createSpirvLowerTranslator(static_cast<ShaderStage>(entryNames[i].stage), &shaderInfo));
+          lowerPassMgr->add(
+              createLegacySpirvLowerTranslator(static_cast<ShaderStage>(entryNames[i].stage), &shaderInfo));
           bool collectDetailUsage =
               entryNames[i].stage == ShaderStageFragment || entryNames[i].stage == ShaderStageCompute;
           auto resCollectPass =
@@ -1271,7 +1272,7 @@ Result Compiler::buildPipelineInternal(Context *context, ArrayRef<const Pipeline
         timerProfiler.addTimerStartStopPass(&*lowerPassMgr, TimerTranslate, true);
 
         // SPIR-V translation, then dump the result.
-        lowerPassMgr->add(createSpirvLowerTranslator(entryStage, shaderInfoEntry));
+        lowerPassMgr->add(createLegacySpirvLowerTranslator(entryStage, shaderInfoEntry));
         if (EnableOuts()) {
           lowerPassMgr->add(createPrintModulePass(
               outs(), "\n"

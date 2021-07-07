@@ -1,7 +1,7 @@
 /*
  ***********************************************************************************************************************
  *
- *  Copyright (c) 2017-2021 Advanced Micro Devices, Inc. All Rights Reserved.
+ *  Copyright (c) 2021 Advanced Micro Devices, Inc. All Rights Reserved.
  *
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -24,52 +24,52 @@
  **********************************************************************************************************************/
 /**
  ***********************************************************************************************************************
- * @file  llpcSpirvLowerConstImmediateStore.h
- * @brief LLPC header file: contains declaration of class Llpc::SpirvLowerConstImmediateStore.
+ * @file  llpcSpirvLowerTerminator.h
+ * @brief LLPC header file: contains declaration of Llpc::SpirvLowerTerminator
  ***********************************************************************************************************************
  */
 #pragma once
 
 #include "llpcSpirvLower.h"
+#include "llvm/IR/InstVisitor.h"
 #include "llvm/IR/PassManager.h"
-
-namespace llvm {
-class AllocaInst;
-class StoreInst;
-} // namespace llvm
 
 namespace Llpc {
 
 // =====================================================================================================================
-// Represents the pass of SPIR-V lowering operations for constant immediate store
-class SpirvLowerConstImmediateStore : public SpirvLower, public llvm::PassInfoMixin<SpirvLowerConstImmediateStore> {
+// Represents the pass of SPIR-V lowering terminators.
+class SpirvLowerTerminator : public SpirvLower,
+                             public llvm::InstVisitor<SpirvLowerTerminator>,
+                             public llvm::PassInfoMixin<SpirvLowerTerminator> {
 public:
   llvm::PreservedAnalyses run(llvm::Module &module, llvm::ModuleAnalysisManager &analysisManager);
   bool runImpl(llvm::Module &module);
 
-  static llvm::StringRef name() { return "Lower SPIR-V constant immediate store"; }
+  static llvm::StringRef name() { return "Lower SPIR-V terminator"; }
+
+  virtual void visitCallInst(llvm::CallInst &callInst);
 
 private:
-  void processAllocaInsts(llvm::Function *func);
-  llvm::StoreInst *findSingleStore(llvm::AllocaInst *allocaInst);
-  void convertAllocaToReadOnlyGlobal(llvm::StoreInst *storeInst);
+  // Instructions to be removed; set for tests, vector for order
+  llvm::SmallPtrSet<llvm::Instruction *, 8> m_instsForRemoval;
+  llvm::SmallVector<llvm::Instruction *, 8> m_removalStack;
 };
 
 // =====================================================================================================================
 // Legacy pass manager wrapper class
-class LegacySpirvLowerConstImmediateStore : public LegacySpirvLower {
+class LegacySpirvLowerTerminator : public LegacySpirvLower {
 public:
-  LegacySpirvLowerConstImmediateStore();
+  LegacySpirvLowerTerminator();
 
   virtual bool runOnModule(llvm::Module &module);
 
   static char ID; // ID of this pass
 
 private:
-  LegacySpirvLowerConstImmediateStore(const LegacySpirvLowerConstImmediateStore &) = delete;
-  LegacySpirvLowerConstImmediateStore &operator=(const LegacySpirvLowerConstImmediateStore &) = delete;
+  LegacySpirvLowerTerminator(const LegacySpirvLowerTerminator &) = delete;
+  LegacySpirvLowerTerminator &operator=(const LegacySpirvLowerTerminator &) = delete;
 
-  SpirvLowerConstImmediateStore Impl;
+  SpirvLowerTerminator Impl;
 };
 
 } // namespace Llpc

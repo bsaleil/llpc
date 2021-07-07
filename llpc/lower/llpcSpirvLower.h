@@ -50,12 +50,12 @@ class PassRegistry;
 void initializeLegacySpirvLowerAccessChainPass(PassRegistry &);
 void initializeSpirvLowerMathConstFoldingPass(PassRegistry &);
 void initializeSpirvLowerMathFloatOpPass(PassRegistry &);
-void initializeSpirvLowerConstImmediateStorePass(PassRegistry &);
+void initializeLegacySpirvLowerConstImmediateStorePass(PassRegistry &);
 void initializeSpirvLowerMemoryOpPass(PassRegistry &);
-void initializeSpirvLowerGlobalPass(PassRegistry &);
+void initializeLegacySpirvLowerGlobalPass(PassRegistry &);
 void initializeSpirvLowerInstMetaRemovePass(PassRegistry &);
 void initializeSpirvLowerResourceCollectPass(PassRegistry &);
-void initializeSpirvLowerTerminatorPass(PassRegistry &);
+void initializeLegacySpirvLowerTerminatorPass(PassRegistry &);
 void initializeLegacySpirvLowerTranslatorPass(PassRegistry &);
 } // namespace llvm
 
@@ -73,29 +73,29 @@ namespace Llpc {
 // @param passRegistry : Pass registry
 inline static void initializeLowerPasses(llvm::PassRegistry &passRegistry) {
   initializeLegacySpirvLowerAccessChainPass(passRegistry);
-  initializeSpirvLowerConstImmediateStorePass(passRegistry);
+  initializeLegacySpirvLowerConstImmediateStorePass(passRegistry);
   initializeSpirvLowerMathConstFoldingPass(passRegistry);
   initializeSpirvLowerMathFloatOpPass(passRegistry);
   initializeSpirvLowerMemoryOpPass(passRegistry);
-  initializeSpirvLowerGlobalPass(passRegistry);
+  initializeLegacySpirvLowerGlobalPass(passRegistry);
   initializeSpirvLowerInstMetaRemovePass(passRegistry);
   initializeSpirvLowerResourceCollectPass(passRegistry);
-  initializeSpirvLowerTerminatorPass(passRegistry);
+  initializeLegacySpirvLowerTerminatorPass(passRegistry);
   initializeLegacySpirvLowerTranslatorPass(passRegistry);
 }
 
 class Context;
 
 llvm::ModulePass *createLegacySpirvLowerAccessChain();
-llvm::ModulePass *createSpirvLowerConstImmediateStore();
+llvm::ModulePass *createLegacySpirvLowerConstImmediateStore();
 llvm::ModulePass *createSpirvLowerMathConstFolding();
 llvm::ModulePass *createSpirvLowerMathFloatOp();
 llvm::ModulePass *createSpirvLowerMemoryOp();
-llvm::ModulePass *createSpirvLowerGlobal();
+llvm::ModulePass *createLegacySpirvLowerGlobal();
 llvm::ModulePass *createSpirvLowerInstMetaRemove();
 llvm::ModulePass *createSpirvLowerResourceCollect(bool collectDetailUsage);
-llvm::ModulePass *createSpirvLowerTerminator();
-llvm::ModulePass *createSpirvLowerTranslator(ShaderStage stage, const PipelineShaderInfo *shaderInfo);
+llvm::ModulePass *createLegacySpirvLowerTerminator();
+llvm::ModulePass *createLegacySpirvLowerTranslator(ShaderStage stage, const PipelineShaderInfo *shaderInfo);
 
 // =====================================================================================================================
 // Represents the pass of SPIR-V lowering operations, as the base class.

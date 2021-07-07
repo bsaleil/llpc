@@ -48,7 +48,7 @@ char LegacySpirvLowerTranslator::ID = 0;
 //
 // @param stage : Shader stage
 // @param shaderInfo : Shader info for this shader
-ModulePass *Llpc::createSpirvLowerTranslator(ShaderStage stage, const PipelineShaderInfo *shaderInfo) {
+ModulePass *Llpc::createLegacySpirvLowerTranslator(ShaderStage stage, const PipelineShaderInfo *shaderInfo) {
   return new LegacySpirvLowerTranslator(stage, shaderInfo);
 }
 
