@@ -98,7 +98,9 @@ private:
 
   // -----------------------------------------------------------------------------------------------------------------
 
-  ModuleAnalysisManager moduleAnalysisManager; // Module analysis manager used when running the passes.
+  LoopAnalysisManager loopAM;                  // Loop analysis manager used when running the passes.
+  CGSCCAnalysisManager cgsccAM;                // CGSCC analysis manager used when running the passes.
+  ModuleAnalysisManager moduleAM;              // Module analysis manager used when running the passes.
   PassInstrumentationCallbacks instrCallbacks; // Instrumentation callbacks ran when running the passes.
   VerifyInstrumentation instrVerify;           // Verify instrumentation, run module verifier after each pass.
   unsigned *m_passIndex = nullptr;             // Pass Index.
@@ -179,12 +181,15 @@ void PassManagerImpl::run(Module &module) {
   // analyses are added beforehand.
   if (!initialized) {
     PassBuilder passBuilder(nullptr, PipelineTuningOptions(), None, &instrCallbacks);
-    passBuilder.registerModuleAnalyses(moduleAnalysisManager);
-    passBuilder.registerFunctionAnalyses(functionAnalysisManager);
-    moduleAnalysisManager.registerPass([&] { return FunctionAnalysisManagerModuleProxy(functionAnalysisManager); });
+    passBuilder.registerModuleAnalyses(moduleAM);
+    passBuilder.registerCGSCCAnalyses(cgsccAM);
+    passBuilder.registerFunctionAnalyses(functionAM);
+    passBuilder.registerLoopAnalyses(loopAM);
+    passBuilder.crossRegisterProxies(loopAM, functionAM, cgsccAM, moduleAM);
+    moduleAM.registerPass([&] { return FunctionAnalysisManagerModuleProxy(functionAM); });
     initialized = true;
   }
-  ModulePassManager::run(module, moduleAnalysisManager);
+  ModulePassManager::run(module, moduleAM);
 }
 
 // =====================================================================================================================

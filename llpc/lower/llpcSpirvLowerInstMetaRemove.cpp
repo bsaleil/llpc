@@ -44,23 +44,38 @@ namespace Llpc {
 
 // =====================================================================================================================
 // Initializes static members.
-char SpirvLowerInstMetaRemove::ID = 0;
+char LegacySpirvLowerInstMetaRemove::ID = 0;
 
 // =====================================================================================================================
 // Pass creator, creates the pass of SPIR-V lowering opertions for removing the instruction metadata
-ModulePass *createSpirvLowerInstMetaRemove() {
-  return new SpirvLowerInstMetaRemove();
+ModulePass *createLegacySpirvLowerInstMetaRemove() {
+  return new LegacySpirvLowerInstMetaRemove();
 }
 
 // =====================================================================================================================
-SpirvLowerInstMetaRemove::SpirvLowerInstMetaRemove() : LegacySpirvLower(ID), m_changed(false) {
+SpirvLowerInstMetaRemove::SpirvLowerInstMetaRemove() : m_changed(false) {
+}
+
+// =====================================================================================================================
+LegacySpirvLowerInstMetaRemove::LegacySpirvLowerInstMetaRemove() : LegacySpirvLower(ID) {
+}
+
+// =====================================================================================================================
+// Executes this SPIR-V lowering pass on the specified LLVM module.
+//
+// @param [in/out] module : LLVM module to be run on (empty on entry)
+// @param [in/out] analysisManager : Analysis manager to use for this transformation
+llvm::PreservedAnalyses SpirvLowerInstMetaRemove::run(llvm::Module &module, llvm::ModuleAnalysisManager &analysisManager) {
+  if (runImpl(module))
+    return llvm::PreservedAnalyses::none();
+  return llvm::PreservedAnalyses::all();
 }
 
 // =====================================================================================================================
 // Executes this SPIR-V lowering pass on the specified LLVM module.
 //
 // @param [in/out] module : LLVM module to be run on
-bool SpirvLowerInstMetaRemove::runOnModule(Module &module) {
+bool SpirvLowerInstMetaRemove::runImpl(Module &module) {
   LLVM_DEBUG(dbgs() << "Run the pass Spirv-Lower-Inst-Meta-Remove\n");
 
   SpirvLower::init(&module);
@@ -98,9 +113,17 @@ bool SpirvLowerInstMetaRemove::runOnModule(Module &module) {
   return m_changed;
 }
 
+// =====================================================================================================================
+// Executes this SPIR-V lowering pass on the specified LLVM module.
+//
+// @param [in/out] module : LLVM module to be run on (empty on entry)
+bool LegacySpirvLowerInstMetaRemove::runOnModule(Module &module) {
+  return Impl.runImpl(module);
+}
+
 } // namespace Llpc
 
 // =====================================================================================================================
 // Initializes the pass of SPIR-V lowering opertions for removing instruction metadata.
-INITIALIZE_PASS(SpirvLowerInstMetaRemove, DEBUG_TYPE, "Lower SPIR-V instruction metadata by removing those targeted",
+INITIALIZE_PASS(LegacySpirvLowerInstMetaRemove, DEBUG_TYPE, "Lower SPIR-V instruction metadata by removing those targeted",
                 false, false)
