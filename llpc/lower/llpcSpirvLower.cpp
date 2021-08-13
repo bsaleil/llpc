@@ -32,6 +32,7 @@
 #include "llpcContext.h"
 #include "llpcDebug.h"
 #include "llpcSpirvLowerAccessChain.h"
+#include "llpcSpirvLowerConstImmediateStore.h"
 #include "llpcSpirvLowerGlobal.h"
 #include "llpcSpirvLowerTerminator.h"
 #include "llpcSpirvLowerUtil.h"
@@ -170,6 +171,9 @@ void SpirvLower::addPasses(Context *context, ShaderStage stage, lgc::PassManager
 
   // Lower SPIR-V global variables, inputs, and outputs
   passMgr.addPass(SpirvLowerGlobal());
+
+  // Lower SPIR-V constant immediate store.//passMgr.add(createSpirvLowerConstImmediateStore());
+  passMgr.addPass(SpirvLowerConstImmediateStore());
 }
 
 // =====================================================================================================================
@@ -203,10 +207,10 @@ void LegacySpirvLower::addPasses(Context *context, ShaderStage stage, legacy::Pa
   passMgr.add(createLegacySpirvLowerGlobal());
 
   // Lower SPIR-V constant immediate store.
-  passMgr.add(createSpirvLowerConstImmediateStore());
+  passMgr.add(createLegacySpirvLowerConstImmediateStore());
 
   // Lower SPIR-V constant folding - must be done before instruction combining pass.
-  passMgr.add(createSpirvLowerMathConstFolding());
+  passMgr.add(createLegacySpirvLowerMathConstFolding());
 
   // Lower SPIR-V memory operations
   passMgr.add(createSpirvLowerMemoryOp());
