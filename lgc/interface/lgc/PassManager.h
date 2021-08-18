@@ -57,8 +57,11 @@ public:
   virtual void run(llvm::Module &module) = 0;
   virtual void setPassIndex(unsigned *passIndex) = 0;
 
+  llvm::PassInstrumentationCallbacks& getPassInstrumentationCallbacks();
+
 protected:
   llvm::FunctionAnalysisManager functionAM;
+  llvm::PassInstrumentationCallbacks instrumentationCallbacks; // Instrumentation callbacks ran when running the passes.
 };
 
 } // namespace lgc

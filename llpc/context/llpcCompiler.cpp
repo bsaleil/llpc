@@ -40,8 +40,15 @@
 #include "llpcGraphicsContext.h"
 #include "llpcShaderModuleHelper.h"
 #include "llpcSpirvLower.h"
+#include "llpcSpirvLowerAccessChain.h"
+#include "llpcSpirvLowerConstImmediateStore.h"
+#include "llpcSpirvLowerGlobal.h"
+#include "llpcSpirvLowerInstMetaRemove.h"
+#include "llpcSpirvLowerMath.h"
+#include "llpcSpirvLowerMemoryOp.h"
 #include "llpcSpirvLowerResourceCollect.h"
 #include "llpcSpirvLowerTranslator.h"
+#include "llpcSpirvLowerTerminator.h"
 #include "llpcSpirvLowerUtil.h"
 #include "llpcTimerProfiler.h"
 #include "llpcUtil.h"
@@ -511,6 +518,24 @@ Compiler::~Compiler() {
 // Destroys the pipeline compiler.
 void Compiler::Destroy() {
   delete this;
+}
+
+// =====================================================================================================================
+// Register the LLPC passes so they can each be identified by a short name.
+// TODO: move that to SpirvLower.cpp (?)
+#define LLPC_PASS(NAME, CLASS) \
+  passMgr.getPassInstrumentationCallbacks().addClassToPassName(decltype(CLASS())::name(), NAME);
+
+static void registerLowerPasses(lgc::PassManager& passMgr) {
+  LLPC_PASS("llpc-spirv-lower-access-chain", SpirvLowerAccessChain);
+  LLPC_PASS("llpc-spirv-lower-const-immediate-store", SpirvLowerConstImmediateStore);
+  LLPC_PASS("llpc-spirv-lower-inst-meta-remove", SpirvLowerInstMetaRemove);
+  LLPC_PASS("llpc-spirv-lower-terminator", SpirvLowerTerminator);
+  LLPC_PASS("llpc-spirv-lower-translator", SpirvLowerTranslator);
+  LLPC_PASS("llpc-spirv-lower-global", SpirvLowerGlobal);
+  LLPC_PASS("llpc-spirv-lower-math-const-folding", SpirvLowerMathConstFolding);
+  LLPC_PASS("llpc-spirv-lower-math-float-op", SpirvLowerMathFloatOp);
+  LLPC_PASS("llpc-spirv-lower-memory-op", SpirvLowerMemoryOp);
 }
 
 // =====================================================================================================================
@@ -1213,6 +1238,7 @@ Result Compiler::buildPipelineInternal(Context *context, ArrayRef<const Pipeline
       if (cl::NewPassManager) {
         std::unique_ptr<lgc::PassManager> lowerPassMgr(lgc::PassManager::Create());
         lowerPassMgr->setPassIndex(&passIndex);
+        registerLowerPasses(*lowerPassMgr);
 
         // Start timer for translate.
         timerProfiler.addTimerStartStopPass(*lowerPassMgr, TimerTranslate, true);
@@ -1279,6 +1305,7 @@ Result Compiler::buildPipelineInternal(Context *context, ArrayRef<const Pipeline
       if (cl::NewPassManager) {
         std::unique_ptr<lgc::PassManager> lowerPassMgr(lgc::PassManager::Create());
         lowerPassMgr->setPassIndex(&passIndex);
+        registerLowerPasses(*lowerPassMgr);
 
         SpirvLower::addPasses(context, entryStage, *lowerPassMgr, timerProfiler.getTimer(TimerLower));
         // Run the passes.
